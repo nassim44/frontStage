@@ -13,10 +13,7 @@ const UserOptions = () => {
     navigate("/signup", { state: { role: ["ROLE_FOURNISSEUR"] } });
   };
   return (
-    <section
-      id="pricing"
-      className="relative flex justify-center z-10 py-8"
-    >
+    <section id="pricing" className="relative flex justify-center z-10 py-8">
       <div className="container">
         <SectionTitle
           title={
@@ -53,7 +50,7 @@ Effortlessly browse and purchase medical supplies. Enjoy a comprehensive set of 
             <OfferList text="Review and Rate Products" status="active" />
           </PricingBox>
           <PricingBox
-            packageName="I'm a Fornissor"
+            packageName="I'm a Supplier"
             subtitle="Streamline your sales process and reach more customers. Access a powerful suite of tools designed for suppliers."
           >
             <div className="mb-8 border-b border-body-color border-opacity-10 pb-8 dark:border-white dark:border-opacity-10">

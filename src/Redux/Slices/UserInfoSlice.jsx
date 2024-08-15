@@ -12,8 +12,11 @@ export const userInfoSlice = createSlice({
     setUserInfo: (state, action) => {
       state.user = action.payload;
     },
+    setToken: (state, action) => {
+      state.token = action.payload;
+    },
   },
 });
-export const { setUserInfo } = userInfoSlice.actions;
+export const { setUserInfo, setToken } = userInfoSlice.actions;
 
 export default userInfoSlice.reducer;

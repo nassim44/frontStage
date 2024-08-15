@@ -1,8 +1,5 @@
-import { useNavigate } from "react-router-dom";
-import {
-  addProduct,
-  addProductOwnSerial,
-} from "../../../../Services/productsApi";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { addProduct, FetchProductById } from "../../../../Services/productsApi";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { FetchAllCategories } from "../../../../Services/categoryApi";
@@ -10,15 +7,8 @@ import SectionTitle from "../../HomePage/components/Common/SectionTitle";
 import { FetchAllCountries } from "../../../../Services/Config/Apis";
 import { IoAdd } from "react-icons/io5";
 import { IoIosRemove } from "react-icons/io";
-import {
-  AddInventory,
-  getAllInventories,
-} from "../../../../Services/inventoryApi";
-import CreatableSelect from "react-select/creatable";
-import { getAllWareHouses } from "../../../../Services/wareHouseApi";
-import { AddSerialNumber } from "../../../../Services/SerialNumberApi";
 
-let initialSteps = [
+const steps = [
   {
     id: "Step 1",
     name: "Product Information",
@@ -31,11 +21,6 @@ let initialSteps = [
   },
   {
     id: "Step 3",
-    name: "Inventory",
-    fields: [""],
-  },
-  {
-    id: "Step 4",
     name: "Final Details",
     fields: [""],
   },
@@ -73,14 +58,11 @@ const Types = [
     ],
   },
 ];
-
-const AddProduct = () => {
-  const [steps, setSteps] = useState(initialSteps);
-  const token = useSelector((state) => state.userInfo.token);
+const UpdateProduct = () => {
+  const { state } = useLocation();
   const navigate = useNavigate();
-  const [hasSerialNumber, setHasSerialNumber] = useState(false);
+  const { id } = useParams();
   const [Categories, setCategories] = useState([]);
-  const [WareHouses, setWareHouses] = useState([]);
   const [Countries, setCountries] = useState([]);
   const [selectedCountries, setSelectedCountries] = useState([]);
   const [Features, setFeatures] = useState([]);
@@ -88,26 +70,23 @@ const AddProduct = () => {
   const [filteredProductTypes, setFilteredProductTypes] = useState([]);
   const [dropdown, setDropdown] = useState(false);
   const [inputs, setInputs] = useState([{ id: 1, value: "" }]);
-  const [selectedWarehouses, setSelectedWarehouses] = useState([]);
-  const [options, setOptions] = useState([]);
   const [Product, setProduct] = useState({
-    name: "",
-    description: "",
+    name: state.product?.name,
+    description: state.product?.description,
     dateExpiration: new Date(),
-    quantite: 0,
-    prix: 0,
-    image: "",
-    productCreator: 0,
-    category: 0,
-    productType: "",
-    Brand: "",
-    serialNumber: 0,
-    shippingMethod: "",
-    shippingCost: 0,
-    handlingTime: "",
+    quantite: state.product?.quantite,
+    prix: state.product?.prix,
+    image: state.product?.image,
+    productCreator: state.product?.productCreator,
+    category: state.product?.category,
+    productType: state.product?.productType,
+    Brand: state.product?.Brand,
+    serialNumber: state.product?.serialNumber,
+    shippingMethod: state.product?.shippingMethod,
+    shippingCost: state.product?.shippingCost,
+    handlingTime: state.product?.handlingTime,
   });
   const userInfo = useSelector((state) => state.userInfo.user);
-  const wareHouseImage = "http://127.0.0.1:8000/uploads";
   const [image, setImage] = useState();
   const handleCheckboxChange = (event, country) => {
     if (event.target.checked) {
@@ -138,17 +117,6 @@ const AddProduct = () => {
   useEffect(() => {
     GetAllCategories();
   }, []);
-  const GetWareHouses = async () => {
-    try {
-      const response = await getAllWareHouses(token);
-      setWareHouses(response);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  useEffect(() => {
-    GetWareHouses();
-  }, []);
   const GetAllCountry = async () => {
     try {
       const response = await FetchAllCountries();
@@ -176,53 +144,18 @@ const AddProduct = () => {
         productCreator: userInfo.id,
         productType: Product.productType,
         Brand: Product.Brand,
+        serialNumber: Product.serialNumber,
         shippingMethod: Product.shippingMethod,
         shippingCost: parseFloat(Product.shippingCost),
         handlingTime: Product.handlingTime,
       };
       try {
-        if (hasSerialNumber) {
-          let inventoriesId = [];
-
-          const response = await addProduct(
-            imageData,
-            selectedCountries,
-            Features,
-            selectedWarehouses
-          );
-
-          inventoriesId = await Promise.all(
-            selectedWarehouses.map(async (warehouseID) => {
-              const responseInventory = await AddInventory(
-                token,
-                response.id,
-                warehouseID
-              );
-              return responseInventory.id;
-            })
-          );
-
-          await Promise.all(
-            options.map(async (serial, index) => {
-              console.log(inventoriesId);
-              const serialNumber = {
-                SerialNumber: serial,
-              };
-
-              await AddSerialNumber(serialNumber, token, inventoriesId[index]);
-            })
-          );
-        } else {
-          const response = await addProduct(
-            imageData,
-            selectedCountries,
-            Features,
-            selectedWarehouses
-          );
-          selectedWarehouses.map(async (warehouseID) => {
-            await AddInventory(token, response.id, warehouseID);
-          });
-        }
+        const response = await addProduct(
+          imageData,
+          selectedCountries,
+          Features
+        );
+        console.log("Utilisateur inscrit avec succès:", response);
         navigate("/products");
       } catch (error) {
         console.error("Erreur lors de l'inscription de l'utilisateur:", error);
@@ -287,26 +220,11 @@ const AddProduct = () => {
       )
     );
   };
-  const handleCheckBoxWareHouse = (wareHouseId) => {
-    if (selectedWarehouses.includes(wareHouseId)) {
-      setSelectedWarehouses(
-        selectedWarehouses.filter((id) => id !== wareHouseId)
-      );
-    } else {
-      setSelectedWarehouses([...selectedWarehouses, wareHouseId]);
-    }
-  };
-
-  const handleOptions = (e) => {
-    e.map((e) => {
-      setOptions([...options, e.value]);
-    });
-  };
   return (
     <>
       <section className="relative z-10 overflow-hidden pt-10 pb-16 md:pb-20 lg:pb-28">
         <div className="container">
-          <SectionTitle title="Create Your Product Products" center />
+          <SectionTitle title="Update Your Product Products" center />
           <nav aria-label="Progress" className="mb-10">
             <ol
               role="list"
@@ -403,8 +321,8 @@ const AddProduct = () => {
                         <textarea
                           name="description"
                           placeholder="Product Description"
-                          onChange={handleChange}
                           defaultValue={Product.description}
+                          onChange={handleChange}
                           className="w-full rounded-md border border-transparent py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
                         />
                       </div>
@@ -412,10 +330,10 @@ const AddProduct = () => {
                         <select
                           id="countries"
                           onChange={handleCategoryChange}
-                          defaultValue={Product.category}
+                          value={Product.category.id}
                           className="bg-gray-50 border mr-2 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         >
-                          <option selected>Choose a Category</option>
+                          <option>Choose a Category</option>
                           {Categories.map((category) => (
                             <option
                               key={category.id}
@@ -431,12 +349,12 @@ const AddProduct = () => {
                           id="product-types"
                           name="productType"
                           onChange={handleChange}
-                          defaultValue={Product.productType}
+                          value={Product.productType}
                           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         >
-                          <option selected>Choose Product Type</option>
+                          <option>Choose Product Type</option>
                           {filteredProductTypes.map((type, index) => (
-                            <option key={index} value={type}>
+                            <option key={type} value={type}>
                               {type}
                             </option>
                           ))}
@@ -489,17 +407,35 @@ const AddProduct = () => {
                           <input
                             type="text"
                             name="Brand"
+                            defaultValue={Product.Brand}
                             placeholder="Brand Name"
                             onChange={(e) => handleChange(e)}
                             className="w-full rounded-md border border-transparent py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
                           />
                         </div>
+                        <div className="w-full">
+                          <label
+                            htmlFor="name"
+                            className="mb-3 block text-sm font-medium text-dark dark:text-white"
+                          >
+                            {" "}
+                            Serial Number{" "}
+                          </label>
+                          <input
+                            type="number"
+                            name="serialNumber "
+                            placeholder="Serial Number"
+                            onChange={handleChange}
+                            className="w-full rounded-md border border-transparent py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
+                          />
+                        </div>
                       </div>
 
-                      <div className="mb-4 flex space-x-2">
+                      <div className="mb-8 flex space-x-2">
                         <input
                           type="number"
                           name="prix"
+                          defaultValue={Product.prix}
                           placeholder="Price"
                           onChange={handleChange}
                           className="w-full rounded-md border border-transparent py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
@@ -508,33 +444,11 @@ const AddProduct = () => {
                           type="number"
                           name="quantite"
                           placeholder="Stock"
+                          defaultValue={Product.quantite}
                           onChange={handleChange}
                           className="w-full rounded-md border border-transparent py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
                         />
                       </div>
-                      <div className="flex items-center mb-4">
-                        <input
-                          id="checked-checkbox"
-                          type="checkbox"
-                          checked={hasSerialNumber}
-                          onChange={(e) => setHasSerialNumber(e.target.checked)}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                        <label
-                          htmlFor="checked-checkbox"
-                          className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                        >
-                          Check this box if the product has its own serial
-                          number
-                        </label>
-                      </div>
-                      {hasSerialNumber && (
-                        <CreatableSelect
-                          isMulti
-                          onChange={handleOptions}
-                          placeholder="Add Serial Numbers"
-                        />
-                      )}
                       <div>
                         <hr className="border-1 my-2" />
                         <p
@@ -609,77 +523,6 @@ const AddProduct = () => {
               <div className="w-full px-4 xl:w-8/12">
                 <div className="mx-auto rounded-md bg-primary bg-opacity-5 py-10 px-6 dark:bg-dark sm:p-[60px]">
                   <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
-                    Inventory Information
-                  </h3>
-                  <p className="mb-11 text-center text-base font-medium text-body-color">
-                    Provide the details for which WareHouse Your product Belong
-                  </p>
-
-                  <div>
-                    {WareHouses.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {WareHouses.map((warehouse, index) => (
-                          <div
-                            key={index}
-                            className="wow w-fit fadeInUp relative overflow-hidden rounded-3xl bg-white shadow-one dark:bg-dark shadow-2xl mb-10"
-                            data-wow-delay=".1s"
-                          >
-                            <div className="flex justify-between items-center p-4">
-                              <input
-                                type="checkbox"
-                                onChange={() =>
-                                  handleCheckBoxWareHouse(warehouse.id)
-                                }
-                                checked={selectedWarehouses.includes(
-                                  warehouse.id
-                                )}
-                              />
-                            </div>
-                            <a className="relative block cursor-pointer h-[120px] w-full">
-                              <span className="absolute top-6 right-6 z-20 inline-flex items-center justify-center rounded-full bg-primary py-2 px-4 text-sm font-semibold capitalize text-white">
-                                {warehouse.name}
-                              </span>
-                              <img
-                                src={wareHouseImage + warehouse.image}
-                                style={{
-                                  maxHeight: "100%",
-                                  width: "100%",
-                                  objectFit: "cover",
-                                }}
-                                alt="warehouse"
-                              />
-                            </a>
-                            <div className="p-6 sm:p-8 md:py-8 md:px-6 lg:p-8 xl:py-8 xl:px-5 2xl:p-8">
-                              <div className="flex justify-between items-center mr-5">
-                                <div className="flex items-center">
-                                  <div className="inline-block">
-                                    <h4 className="mb-1 text-sm font-medium text-dark dark:text-white">
-                                      WareHouse Capacity
-                                    </h4>
-                                    <p className="text-xs text-body-color">
-                                      {warehouse.capacity}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p>No inventories available.</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {currentStep === 3 && (
-            <div className="-mx-4 flex justify-center flex-wrap">
-              <div className="w-full px-4 xl:w-8/12">
-                <div className="mx-auto rounded-md bg-primary bg-opacity-5 py-10 px-6 dark:bg-dark sm:p-[60px]">
-                  <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
                     Shipping Information
                   </h3>
                   <p className="mb-11 text-center text-base font-medium text-body-color">
@@ -698,6 +541,7 @@ const AddProduct = () => {
                         <select
                           id="shippingMethod"
                           name="shippingMethod"
+                          value={Product.shippingMethod}
                           onChange={handleChange}
                           className="w-full rounded-md border border-transparent py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
                         >
@@ -723,6 +567,7 @@ const AddProduct = () => {
                         <input
                           type="number"
                           name="shippingCost"
+                          defaultValue={Product.shippingCost}
                           placeholder="Shipping Cost"
                           onChange={handleChange}
                           className="w-full rounded-md border border-transparent py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
@@ -742,6 +587,7 @@ const AddProduct = () => {
                         name="handlingTime"
                         placeholder="Handling Time (e.g., 1-2 business days)"
                         onChange={handleChange}
+                        defaultValue={Product.handlingTime}
                         className="w-full rounded-md border border-transparent py-3 px-6 text-base text-body-color placeholder-body-color shadow-one outline-none focus:border-primary focus-visible:shadow-none dark:bg-[#242B51] dark:shadow-signUp"
                       />
                     </div>
@@ -942,4 +788,4 @@ const AddProduct = () => {
   );
 };
 
-export default AddProduct;
+export default UpdateProduct;

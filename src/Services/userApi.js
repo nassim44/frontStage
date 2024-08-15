@@ -26,3 +26,23 @@ export async function findUserByMail(email) {
     throw error.response.data;
   }
 }
+export async function LikeProduct(idUser, idProduct) {
+  try {
+    const response = await axios.post(
+      `${apiURL.base}Like/${idProduct}/${idUser}`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+}
+export async function RemoveLikedProduct(idUser, idProduct) {
+  try {
+    const response = await axios.post(
+      `${apiURL.base}unLike/${idProduct}/${idUser}`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+}

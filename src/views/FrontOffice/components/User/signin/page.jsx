@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signIn } from "../../../../../Services/userApi";
+import { findUserByMail, signIn } from "../../../../../Services/userApi";
 import { useDispatch } from "react-redux";
-import { setUserInfo } from "../../../../../Redux/Slices/UserInfoSlice";
+import {
+  setToken,
+  setUserInfo,
+} from "../../../../../Redux/Slices/UserInfoSlice";
 import { jwtDecode } from "jwt-decode";
 
 const SigninPage = () => {
@@ -34,6 +37,7 @@ const SigninPage = () => {
       if (response.message) {
         window.location.href = "http://127.0.0.1:8000/";
       } else {
+        dispatch(setToken(response.token));
         localStorage.setItem("token", response.token);
         const decodedToken = jwtDecode(response.token);
         getUserAllInformation(decodedToken.username);
