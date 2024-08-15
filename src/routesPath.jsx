@@ -8,6 +8,8 @@ import UserOptions from "./views/FrontOffice/components/User/signup/userOptions.
 import DisplayProducts from "./views/FrontOffice/Products/displayProducts.jsx";
 import ProductDetail from "./views/FrontOffice/Products/productDetail/productDetail.jsx";
 import AddProduct from "./views/FrontOffice/Products/Add/addProduct.jsx";
+import UpdateProduct from "./views/FrontOffice/Products/updateProduct/updateProduct.jsx";
+import Panier from "./views/FrontOffice/Panier/Panier.jsx";
 function RoutesPath() {
   return (
     <div>
@@ -21,7 +23,8 @@ function RoutesPath() {
         <Route path="/products" element={<DisplayProducts />} />
         <Route path="/productDetail/:id" element={<ProductDetail />} />
         <Route path="/addproduct" element={<AddProduct />} />
-
+        <Route path="/updateproduct" element={<UpdateProduct />} />
+        <Route path="/panier" element={<Panier />} />
       </Routes>
     </div>
   );

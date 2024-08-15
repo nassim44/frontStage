@@ -19,7 +19,7 @@ const menuData = [
   },
   {
     id: 3,
-    title: "Product",
+    title: "My Products",
     path: "/products",
     newTab: false,
   },

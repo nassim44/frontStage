@@ -4,8 +4,15 @@ import menuData from "./menuData.jsx";
 import { Link, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { findUserByMail } from "../../../../Services/userApi.js";
-import { useDispatch, useSelector } from "react-redux";
-import { setUserInfo } from "../../../../Redux/Slices/UserInfoSlice.jsx";
+import { useDispatch } from "react-redux";
+import {
+  setToken,
+  setUserInfo,
+} from "../../../../Redux/Slices/UserInfoSlice.jsx";
+import { BsCart4 } from "react-icons/bs";
+import { CiLogout } from "react-icons/ci";
+import { IoSettingsOutline } from "react-icons/io5";
+import { CgProfile } from "react-icons/cg";
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -55,14 +62,18 @@ const Header = () => {
 
   useEffect(() => {
     const userToken = localStorage.getItem("token");
+    dispatch(setToken(userToken));
     if (userToken) {
       const decodedToken = jwtDecode(userToken);
-      getUserAllInformation(decodedToken.email);
+      getUserAllInformation(decodedToken.username);
     }
   }, []);
   const deleteToken = () => {
     localStorage.removeItem("token");
     navigate("/signin");
+  };
+  const handleNavigate = () => {
+    navigate("/panier");
   };
   return (
     <>
@@ -245,35 +256,40 @@ const Header = () => {
                               >
                                 <li>
                                   <a
-                                    href="#"
-                                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                    type="button"
+                                    className="flex justify-between cursor-pointer items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                                   >
-                                    Dashboard
+                                    Profile
+                                    <CgProfile />
                                   </a>
                                 </li>
                                 <li>
                                   <a
-                                    href="#"
-                                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                    onClick={handleNavigate}
+                                    className="flex justify-between cursor-pointer items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                  >
+                                    Cart
+                                    <BsCart4 />
+                                  </a>
+                                </li>
+                                <li>
+                                  <a
+                                    type="button"
+                                    className="flex justify-between cursor-pointer items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                                   >
                                     Settings
+                                    <IoSettingsOutline />
                                   </a>
                                 </li>
                                 <li>
                                   <a
-                                    href="#"
-                                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                  >
-                                    Earnings
-                                  </a>
-                                </li>
-                                <li>
-                                  <button
                                     onClick={deleteToken}
-                                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                    type="button"
+                                    className="flex justify-between cursor-pointer items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                                   >
                                     Sign out
-                                  </button>
+                                    <CiLogout />
+                                  </a>
                                 </li>
                               </ul>
                             </div>
